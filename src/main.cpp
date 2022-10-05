@@ -16,8 +16,8 @@ char fasaPadam;
 String NO_HP = "6285333389189"; // No HP ISI DI SINI ! (+62 ...)
 String pesanListrikMenyala = "KD 0181 Tegangan sudah kembali normal";
 String pesanListrikPadam;
-
-
+String pesanMasuk;
+String kontenSMSInfoFrekuensi;
 // buat konversi dari float ke string (pada funsgi lcdDisplay)
 char str_dataFasa_R[5];
 char str_dataFasa_S[5];
@@ -90,10 +90,12 @@ void setup()
 
 void loop()
 {
-  /* ************** METODE STATE MACHINE ************** */
   bacaDataListrik(pzem_R, &dataListrik_fasa_R);
   bacaDataListrik(pzem_S, &dataListrik_fasa_S);
   bacaDataListrik(pzem_T, &dataListrik_fasa_T);
+
+  /* ************** METODE STATE MACHINE ************** */
+
   lcdDisplay(); // timer interrupt
   Serial.println(state);
   switch (state)
@@ -106,7 +108,7 @@ void loop()
     if (statusPintu == STATUS_PINTU_TERTUTUP)
     {
       state = 10;
-      Serial.println("PINTU TERUTUP");
+      //  Serial.println("PINTU TERUTUP");
     }
 
     else if (statusPintu == STATUS_PINTU_TERBUKA)
@@ -164,10 +166,7 @@ void loop()
   break;
   case 4:
   {
-    String pesanMasuk = nungguSMS();
-    // normalisasi huruf
-    pesanMasuk.toLowerCase();
-
+    //  normalisasi huruf
     // controller state
     if (pesanMasuk == "info")
     {
@@ -177,6 +176,12 @@ void loop()
     {
       state = 1;
     }
+  }
+  break;
+  case 5:
+  {
+    // String kontenSMSInfo = " Kririm pesan listrik";
+    state = 1;
   }
   break;
   case 6:
@@ -189,12 +194,12 @@ void loop()
   case 7:
   {
     statusListrikPadam = 1; // tandai listrik masih padam
-    if(statusOperasionalSMS == 0)
+    if (statusOperasionalSMS == 0)
     {
       state = 8;
       statusOperasionalSMS = 1; // tandai sudah kirim sms listrik padam
     }
-    else if(statusOperasionalSMS == 1)
+    else if (statusOperasionalSMS == 1)
     {
       state = 2;
     }
@@ -204,29 +209,36 @@ void loop()
   case 8:
   {
     kirimSMS(pesanListrikPadam, NO_HP);
+    String kontenSMSInfoTegangan = "Tegangan: " + String(dataListrik_fasa_R.tegangan) + " | " + String(dataListrik_fasa_S.tegangan) + " | " + String(dataListrik_fasa_T.tegangan);
+    kirimSMS(kontenSMSInfoTegangan, NO_HP);
+    String kontenSMSInfoArus = "Arus: " + String(dataListrik_fasa_R.arus) + " | " + String(dataListrik_fasa_S.arus) + " | " + String(dataListrik_fasa_T.arus);
+    kirimSMS(kontenSMSInfoArus, NO_HP);
+
     state = 2;
   }
   break;
   case 9:
   {
     kirimSMS(pesanListrikMenyala, NO_HP);
+    String kontenSMSInfoTegangan = "Tegangan: " + String(dataListrik_fasa_R.tegangan) + " | " + String(dataListrik_fasa_S.tegangan) + " | " + String(dataListrik_fasa_T.tegangan);
+    kirimSMS(kontenSMSInfoTegangan, NO_HP);
+    String kontenSMSInfoArus = "Arus: " + String(dataListrik_fasa_R.arus) + " | " + String(dataListrik_fasa_S.arus) + " | " + String(dataListrik_fasa_T.arus);
+    kirimSMS(kontenSMSInfoArus, NO_HP);
+
     state = 3;
   }
   break;
   case 10:
   {
-    if(statusKeadaanPintu == 1)
+    if (statusKeadaanPintu == 1)
     {
       statusKeadaanPintu = 0; // pintu sudah ditutup
       state = 2;
-
     }
     else if (statusKeadaanPintu == 0)
     {
       state = 2;
     }
-
-
   }
   break;
   default:
@@ -280,7 +292,7 @@ void kirimSMS(String _kontenSMS, String _noHP)
 
 void clearNotif()
 {
-  statusListrikPadam = 0; // listrik menyala
+  statusListrikPadam = 0;   // listrik menyala
   statusOperasionalSMS = 0; // sms untuk listrik padam sudah direset
 }
 
@@ -289,10 +301,11 @@ void lcdDisplay()
   char _dataParameter[MAX_CHAR] = "";
   String _judul = "";
 
-  stateTampilan = stateTampilan % 3;
+  stateTampilan = stateTampilan % 2;
 
   if (millis() - prevTime >= INTERVAL_DISPLAY)
   {
+
     prevTime = millis();
     if (stateTampilan == 0)
     {
@@ -308,13 +321,13 @@ void lcdDisplay()
       dtostrf(dataListrik_fasa_T.arus, 3, 0, str_dataFasa_T);
       _judul = "  ARUS (RST)";
     }
-    else if (stateTampilan == 2)
-    {
-      dtostrf(dataListrik_fasa_R.frekuensi, 3, 0, str_dataFasa_R);
-      dtostrf(dataListrik_fasa_S.frekuensi, 3, 0, str_dataFasa_S);
-      dtostrf(dataListrik_fasa_T.frekuensi, 3, 0, str_dataFasa_T);
-      _judul = "FREKUENSI (RST)";
-    }
+    // else if (stateTampilan == 2)
+    // {
+    //   dtostrf(dataListrik_fasa_R.frekuensi, 3, 0, str_dataFasa_R);
+    //   dtostrf(dataListrik_fasa_S.frekuensi, 3, 0, str_dataFasa_S);
+    //   dtostrf(dataListrik_fasa_T.frekuensi, 3, 0, str_dataFasa_T);
+    //   _judul = "FREKUENSI (RST)";
+    // }
 
     lcd.clear();
     lcd.setCursor(1, 0);
