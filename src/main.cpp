@@ -14,7 +14,7 @@ uint8_t state = 0;
 uint8_t stateTampilan = 0;
 char fasaPadam;
 String NO_HP = "6285333389189"; // No HP ISI DI SINI ! (+62 ...)
-String pesanListrikMenyala = "KD 0181 Tegangan sudah normal, sudah menyala";
+String pesanListrikMenyala = "KD 0181 Tegangan sudah kembali normal";
 String pesanListrikPadam;
 
 
@@ -105,7 +105,7 @@ void loop()
     // controller state
     if (statusPintu == STATUS_PINTU_TERTUTUP)
     {
-      state = 2;
+      state = 10;
       Serial.println("PINTU TERUTUP");
     }
 
@@ -211,6 +211,22 @@ void loop()
   {
     kirimSMS(pesanListrikMenyala, NO_HP);
     state = 3;
+  }
+  break;
+  case 10:
+  {
+    if(statusKeadaanPintu == 1)
+    {
+      statusKeadaanPintu = 0; // pintu sudah ditutup
+      state = 2;
+
+    }
+    else if (statusKeadaanPintu == 0)
+    {
+      state = 2;
+    }
+
+
   }
   break;
   default:
