@@ -6,6 +6,8 @@
 #include "LiquidCrystal_I2C.h"
 
 // Global variabel
+// nomor handphone
+String NO_HP = "6285333389189"; // No HP ISI DI SINI ! (+62 ...)
 bool statusKeadaanPintu;
 bool statusOperasionalSMS;
 uint8_t stateTampilan = 0;
@@ -51,7 +53,7 @@ ComInterface SIM800C;
 bool bacaPintu();
 void bacaDataListrik(PZEM004Tv30 _pzem, dataListrik *_dataListrik);
 String nungguSMS();
-void kirimSMS(String *_kontenSMS, String *_noHP);
+void kirimSMS(String _kontenSMS, String _noHP);
 void clearNotif();
 void lcdDisplay();
 
@@ -64,7 +66,7 @@ void setup()
   Serial.begin(BAUDRATE);
   // LCD 16 x 2
   lcd.begin();
-  millis(); // mulai timer
+  millis(); // mulai timer untuk display (LCD diperbaharui setiap 2 detik sekali)
 
   // Turn on the blacklight and print a message.
   lcd.backlight();
@@ -73,14 +75,21 @@ void setup()
   // sensor pintu
   pinMode(PIN_SENSOR_PINTU, INPUT_PULLUP);
   // sensor PZEM
+
+
   // SIM800C
+  delay(3000); // untuk inisiasi SIM800C
   SIM800C.init();
+
+  String msg = "Warning! \n KD 0181 \n Tegangan hilang, Fasa R padam \n tolong di cek!";
+  String msgMenyala = "KD 0181 Fasa R, sudah menyala";
+  kirimSMS(msg, NO_HP);
 }
 
 void loop()
 {
-  test_bacaPZEM();
-  lcdDisplay();
+  String pesanMasuk = nungguSMS();
+  Serial.print(pesanMasuk);
 }
 
 /* ************** Fungsi - Fungsi ************* */
@@ -116,9 +125,9 @@ String nungguSMS()
   return _smsMasuk;
 }
 
-void kirimSMS(String *_kontenSMS, String *_noHP)
+void kirimSMS(String _kontenSMS, String _noHP)
 {
-  SIM800C.sendSMS(*_kontenSMS, *_noHP);
+  SIM800C.sendSMS(_kontenSMS, _noHP);
 }
 
 void clearNotif()
