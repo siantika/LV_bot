@@ -9,6 +9,7 @@
 // nomor handphone
 bool statusKeadaanPintu;
 bool statusOperasionalSMS;
+bool statusListrikPadam = 0; // tidak padam = 0 || padam = 1
 uint8_t state = 0;
 uint8_t stateTampilan = 0;
 String NO_HP = "6285333389189"; // No HP ISI DI SINI ! (+62 ...)
@@ -16,9 +17,9 @@ String msg = "Warning! \n KD 0181 \n Tegangan hilang, Fasa R padam \n tolong di 
 String msgMenyala = "KD 0181 Fasa R, sudah menyala";
 
 // buat konversi dari float ke string (pada funsgi lcdDisplay)
-char str_dataFasa_R[3];
-char str_dataFasa_S[3];
-char str_dataFasa_T[3];
+char str_dataFasa_R[5];
+char str_dataFasa_S[5];
+char str_dataFasa_T[5];
 
 /* -------------- Inisialisasi -------------- */
 
@@ -80,21 +81,83 @@ void setup()
   // SIM800C
   delay(3000); // untuk inisiasi SIM800C
   SIM800C.init();
+
+  // trigger state
+  state = 0;
 }
 
 void loop()
 {
   /* ************** METODE STATE MACHINE ************** */
+  bacaDataListrik(pzem_R, &dataListrik_fasa_R);
+  bacaDataListrik(pzem_S, &dataListrik_fasa_S);
+  bacaDataListrik(pzem_T, &dataListrik_fasa_T);
+  lcdDisplay(); // timer interrupt
+  // Serial.println(state);
   switch (state)
   {
   case 1:
   {
     bool statusPintu = bacaPintu();
+
+    // controller state
+    if (statusPintu == STATUS_PINTU_TERTUTUP)
+    {
+      state = 2;
+      Serial.println("PINTU TERUTUP");
+    }
+    else if (statusPintu == STATUS_PINTU_TERBUKA)
+
+    {
+      // Serial.println("PINTU TERBUKA");
+    }
   }
-    break;
-  
+  break;
+  case 2:
+  {
+
+    // controller state
+    // listrik menyala
+    if ((dataListrik_fasa_R.tegangan + dataListrik_fasa_S.tegangan + dataListrik_fasa_T.tegangan) != 0)
+    {
+      Serial.println(dataListrik_fasa_R.tegangan);
+      Serial.println(dataListrik_fasa_S.tegangan);
+      Serial.println(dataListrik_fasa_T.tegangan);
+      state = 3;
+    }
+  }
+  break;
+  case 3:
+  {
+    clearNotif();
+
+    // controller state
+    state = 4;
+  }
+  break;
+  case 4:
+  {
+    String pesanMasuk = nungguSMS();
+    // normalisasi huruf
+    pesanMasuk.toLowerCase();
+
+    // controller state
+    if (pesanMasuk == "info")
+    {
+      state = 5;
+    }
+    else
+    {
+      state = 1;
+    }
+  }
+  break;
   default:
-    break;
+  {
+    Serial.println("ada error pada state:");
+    Serial.println(state);
+  }
+  break;
   }
 
   /* ************** AKHIR DARI METODE STATE MACHINE ************** */
@@ -180,6 +243,7 @@ void lcdDisplay()
     lcd.setCursor(0, 1);
     sprintf(_dataParameter, " %s %s %s ", str_dataFasa_R, str_dataFasa_S, str_dataFasa_T);
     lcd.print(_dataParameter);
+    Serial.println(_dataParameter);
 
     stateTampilan += 1; // update state display
   }

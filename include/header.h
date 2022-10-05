@@ -4,3 +4,5 @@
 
 #define MAX_CHAR 16 // LCD 16 x 2 hanya mampu menampilkan 16 karakter saja!
 
+#define STATUS_PINTU_TERBUKA 0
+#define STATUS_PINTU_TERTUTUP 1
