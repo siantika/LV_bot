@@ -1,3 +1,3 @@
 /* Pin untuk input output mapping */
 
-#define PIN_SENSOR_PINTU D6
+#define PIN_SENSOR_PINTU 6

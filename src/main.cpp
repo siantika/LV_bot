@@ -1,15 +1,23 @@
 #include <Arduino.h>
 #include "header.h"
+#include "io_mapping.h"
 
-
+// Forward function declaration
+bool bacaPintu();
 
 void setup()
 {
-  // put your setup code here, to run once:
   Serial.begin(BAUDRATE);
+  // sensor pintu
+  pinMode(PIN_SENSOR_PINTU, INPUT_PULLUP); 
 }
 
 void loop()
 {
-  // put your main code here, to run repeatedly:
+
+}
+
+bool bacaPintu()
+{
+  return digitalRead(PIN_SENSOR_PINTU);
 }
