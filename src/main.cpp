@@ -43,6 +43,7 @@ void bacaDataListrik(PZEM004Tv30 _pzem, dataListrik *_dataListrik);
 String nungguSMS();
 void kirimSMS(String *_kontenSMS, String *_noHP);
 void clearNotif();
+void test_bacaPZEM();
 
 void setup()
 {
@@ -56,32 +57,8 @@ void setup()
 
 void loop()
 {
-  bacaDataListrik(pzem_R, &dataListrik_fasa_R);
-  bacaDataListrik(pzem_S, &dataListrik_fasa_S);
-  bacaDataListrik(pzem_T, &dataListrik_fasa_T);
 
-  Serial.println("---------------------------");
-  Serial.println("Parameter \tFasa R \tFasa S \tFasa T");
-  Serial.println("---------------------------");
-  Serial.print("Tegangan \t");
-  Serial.print(String(dataListrik_fasa_R.tegangan));
-  Serial.print("\t" + String(dataListrik_fasa_S.tegangan));
-  Serial.print("\t" + String(dataListrik_fasa_T.tegangan));
-  Serial.println();
-  Serial.print("Arus \t\t");
-  Serial.print(String(dataListrik_fasa_R.arus));
-  Serial.print("\t" + String(dataListrik_fasa_S.arus));
-  Serial.print("\t" + String(dataListrik_fasa_T.arus));
-  Serial.println();
-  Serial.print("Frekuensi \t");
-  Serial.print(String(dataListrik_fasa_R.frekuensi));
-  Serial.print("\t" + String(dataListrik_fasa_S.frekuensi));
-  Serial.print("\t" + String(dataListrik_fasa_T.frekuensi));
-  Serial.println();
-  Serial.println();
-  Serial.println();
-  Serial.println();
-  Serial.println();
+  test_bacaPZEM();
 }
 
 /* ************** Fungsi - Fungsi ************* */
@@ -124,4 +101,36 @@ void kirimSMS(String *_kontenSMS, String *_noHP)
 
 void clearNotif()
 {
+}
+
+// Fungsi untuk tetsing
+
+void test_bacaPZEM()
+{
+  bacaDataListrik(pzem_R, &dataListrik_fasa_R);
+  bacaDataListrik(pzem_S, &dataListrik_fasa_S);
+  bacaDataListrik(pzem_T, &dataListrik_fasa_T);
+
+  Serial.println("------------------------------------");
+  Serial.println("Parameter \tFasa R \tFasa S \tFasa T");
+  Serial.println("------------------------------------");
+  Serial.print("Tegangan \t");
+  Serial.print(String(dataListrik_fasa_R.tegangan));
+  Serial.print("\t" + String(dataListrik_fasa_S.tegangan));
+  Serial.print("\t" + String(dataListrik_fasa_T.tegangan));
+  Serial.println();
+  Serial.print("Arus \t\t");
+  Serial.print(String(dataListrik_fasa_R.arus));
+  Serial.print("\t" + String(dataListrik_fasa_S.arus));
+  Serial.print("\t" + String(dataListrik_fasa_T.arus));
+  Serial.println();
+  Serial.print("Frekuensi \t");
+  Serial.print(String(dataListrik_fasa_R.frekuensi));
+  Serial.print("\t" + String(dataListrik_fasa_S.frekuensi));
+  Serial.print("\t" + String(dataListrik_fasa_T.frekuensi));
+  Serial.println();
+  Serial.println();
+  Serial.println();
+  Serial.println();
+  Serial.println();
 }
