@@ -12,9 +12,11 @@ bool statusOperasionalSMS;
 bool statusListrikPadam = 0; // tidak padam = 0 || padam = 1
 uint8_t state = 0;
 uint8_t stateTampilan = 0;
+char fasaPadam;
 String NO_HP = "6285333389189"; // No HP ISI DI SINI ! (+62 ...)
-String msg = "Warning! \n KD 0181 \n Tegangan hilang, Fasa R padam \n tolong di cek!";
-String msgMenyala = "KD 0181 Fasa R, sudah menyala";
+String pesanListrikMenyala = "KD 0181 Tegangan sudah normal, sudah menyala";
+String pesanListrikPadam;
+
 
 // buat konversi dari float ke string (pada funsgi lcdDisplay)
 char str_dataFasa_R[5];
@@ -83,7 +85,7 @@ void setup()
   SIM800C.init();
 
   // trigger state
-  state = 0;
+  state = 1;
 }
 
 void loop()
@@ -93,7 +95,7 @@ void loop()
   bacaDataListrik(pzem_S, &dataListrik_fasa_S);
   bacaDataListrik(pzem_T, &dataListrik_fasa_T);
   lcdDisplay(); // timer interrupt
-  // Serial.println(state);
+  Serial.println(state);
   switch (state)
   {
   case 1:
@@ -106,24 +108,49 @@ void loop()
       state = 2;
       Serial.println("PINTU TERUTUP");
     }
-    else if (statusPintu == STATUS_PINTU_TERBUKA)
 
+    else if (statusPintu == STATUS_PINTU_TERBUKA)
     {
-      // Serial.println("PINTU TERBUKA");
+      if (statusKeadaanPintu == 0)
+      {
+        Serial.println("PINTU TERBUKA");
+        statusKeadaanPintu = 1; // tandai sudah pernah terbuka
+        state = 6;
+      }
+      else if (statusKeadaanPintu == 1)
+      {
+        state = 2;
+      }
     }
   }
   break;
   case 2:
   {
-
     // controller state
     // listrik menyala
-    if ((dataListrik_fasa_R.tegangan + dataListrik_fasa_S.tegangan + dataListrik_fasa_T.tegangan) != 0)
+    if ((dataListrik_fasa_R.tegangan * dataListrik_fasa_S.tegangan * dataListrik_fasa_T.tegangan) != 0 && statusListrikPadam == 0)
     {
-      Serial.println(dataListrik_fasa_R.tegangan);
-      Serial.println(dataListrik_fasa_S.tegangan);
-      Serial.println(dataListrik_fasa_T.tegangan);
       state = 3;
+    }
+    else if (dataListrik_fasa_R.tegangan == 0)
+    {
+      pesanListrikPadam = "Warning! \n KD 0181 \n Tegangan hilang, Fasa R padam \n tolong di cek!";
+      state = 7;
+    }
+    else if (dataListrik_fasa_S.tegangan == 0)
+    {
+      pesanListrikPadam = "Warning! \n KD 0181 \n Tegangan hilang, Fasa S padam \n tolong di cek!";
+      state = 7;
+    }
+
+    else if (dataListrik_fasa_T.tegangan == 0)
+    {
+      pesanListrikPadam = "Warning! \n KD 0181 \n Tegangan hilang, Fasa T padam \n tolong di cek!";
+      state = 7;
+    }
+    if ((dataListrik_fasa_R.tegangan * dataListrik_fasa_S.tegangan * dataListrik_fasa_T.tegangan) != 0 && statusListrikPadam == 1)
+    {
+      state = 9;
     }
   }
   break;
@@ -150,6 +177,40 @@ void loop()
     {
       state = 1;
     }
+  }
+  break;
+  case 6:
+  {
+    String pesanAlarmPintu = "KD 0181 Pintu lv board terbuka!";
+    kirimSMS(pesanAlarmPintu, NO_HP);
+    state = 1;
+  }
+  break;
+  case 7:
+  {
+    statusListrikPadam = 1; // tandai listrik masih padam
+    if(statusOperasionalSMS == 0)
+    {
+      state = 8;
+      statusOperasionalSMS = 1; // tandai sudah kirim sms listrik padam
+    }
+    else if(statusOperasionalSMS == 1)
+    {
+      state = 2;
+    }
+  }
+  break;
+
+  case 8:
+  {
+    kirimSMS(pesanListrikPadam, NO_HP);
+    state = 2;
+  }
+  break;
+  case 9:
+  {
+    kirimSMS(pesanListrikMenyala, NO_HP);
+    state = 3;
   }
   break;
   default:
@@ -203,6 +264,8 @@ void kirimSMS(String _kontenSMS, String _noHP)
 
 void clearNotif()
 {
+  statusListrikPadam = 0; // listrik menyala
+  statusOperasionalSMS = 0; // sms untuk listrik padam sudah direset
 }
 
 void lcdDisplay()
@@ -243,7 +306,7 @@ void lcdDisplay()
     lcd.setCursor(0, 1);
     sprintf(_dataParameter, " %s %s %s ", str_dataFasa_R, str_dataFasa_S, str_dataFasa_T);
     lcd.print(_dataParameter);
-    Serial.println(_dataParameter);
+    // Serial.println(_dataParameter);
 
     stateTampilan += 1; // update state display
   }
