@@ -12,3 +12,7 @@
 
 #define PIN_UART_RX_FASA_T 11
 #define PIN_UART_TX_FASA_T 12
+
+// SIM 800C
+#define PIN_UART_SIM_RX 4
+#define PIN_UART_SIM_TX 5

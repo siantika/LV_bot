@@ -1,11 +1,11 @@
 #ifndef COMINTERFACE_H
 #define COMINTERFACE_H
+
 #include "Arduino.h"
 #include "SoftwareSerial.h"
-#include "header.h"
+
 
 #define BAUDRATE_SIM800 9600 // bps
-
 #define MAX_SMS_CHAR 15
 #define PIN_UART_SIM_RX 4
 #define PIN_UART_SIM_TX 5 
