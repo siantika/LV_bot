@@ -7,22 +7,27 @@
 
 // Global variabel
 // nomor handphone
-String NO_HP = "6285333389189"; // No HP ISI DI SINI ! (+62 ...)
 bool statusKeadaanPintu;
 bool statusOperasionalSMS;
+uint8_t state = 0;
 uint8_t stateTampilan = 0;
+String NO_HP = "6285333389189"; // No HP ISI DI SINI ! (+62 ...)
+String msg = "Warning! \n KD 0181 \n Tegangan hilang, Fasa R padam \n tolong di cek!";
+String msgMenyala = "KD 0181 Fasa R, sudah menyala";
+
 // buat konversi dari float ke string (pada funsgi lcdDisplay)
 char str_dataFasa_R[3];
 char str_dataFasa_S[3];
 char str_dataFasa_T[3];
 
 /* -------------- Inisialisasi -------------- */
+
 /* *************** LCD 16 x 2 ************** */
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 unsigned long prevTime = 0;
-/* *************** LCD 16 x 2 akhir *************** */
+/* *************** akhir dari LCD 16 x 2  *************** */
 
-/* *************** PZEM awal *************** */
+/* *************** PZEM  *************** */
 // Variabel
 typedef struct
 {
@@ -43,23 +48,22 @@ dataListrik dataListrik_fasa_R;
 dataListrik dataListrik_fasa_S;
 dataListrik dataListrik_fasa_T;
 
-/* *************** PZEM akhir *************** */
+/* *************** akhir dari PZEM *************** */
 
-/* *************** SIM800C awal *************** */
+/* *************** SIM800C *************** */
 ComInterface SIM800C;
-/* *************** SIM800C akhir *************** */
+/* *************** akhir dari SIM800C *************** */
 
-// Forward function declaration
+/* *************** Forward function declaration ************ */
 bool bacaPintu();
-void bacaDataListrik(PZEM004Tv30 _pzem, dataListrik *_dataListrik);
 String nungguSMS();
+void bacaDataListrik(PZEM004Tv30 _pzem, dataListrik *_dataListrik);
 void kirimSMS(String _kontenSMS, String _noHP);
 void clearNotif();
 void lcdDisplay();
+/* *************** akhir dari forward function declaration ************ */
 
-// test fungsi
-void test_bacaPZEM();
-void test_LCD();
+/* -------------- Akhir dari Inisialisasi  -------------- */
 
 void setup()
 {
@@ -67,29 +71,33 @@ void setup()
   // LCD 16 x 2
   lcd.begin();
   millis(); // mulai timer untuk display (LCD diperbaharui setiap 2 detik sekali)
-
-  // Turn on the blacklight and print a message.
   lcd.backlight();
   lcd.print("   Alat Ready!");
 
   // sensor pintu
   pinMode(PIN_SENSOR_PINTU, INPUT_PULLUP);
-  // sensor PZEM
-
 
   // SIM800C
   delay(3000); // untuk inisiasi SIM800C
   SIM800C.init();
-
-  String msg = "Warning! \n KD 0181 \n Tegangan hilang, Fasa R padam \n tolong di cek!";
-  String msgMenyala = "KD 0181 Fasa R, sudah menyala";
-  kirimSMS(msg, NO_HP);
 }
 
 void loop()
 {
-  String pesanMasuk = nungguSMS();
-  Serial.print(pesanMasuk);
+  /* ************** METODE STATE MACHINE ************** */
+  switch (state)
+  {
+  case 1:
+  {
+    bool statusPintu = bacaPintu();
+  }
+    break;
+  
+  default:
+    break;
+  }
+
+  /* ************** AKHIR DARI METODE STATE MACHINE ************** */
 }
 
 /* ************** Fungsi - Fungsi ************* */
@@ -175,36 +183,4 @@ void lcdDisplay()
 
     stateTampilan += 1; // update state display
   }
-}
-
-// Fungsi untuk tetsing
-
-void test_bacaPZEM()
-{
-  bacaDataListrik(pzem_R, &dataListrik_fasa_R);
-  bacaDataListrik(pzem_S, &dataListrik_fasa_S);
-  bacaDataListrik(pzem_T, &dataListrik_fasa_T);
-
-  // Serial.println("------------------------------------");
-  // Serial.println("Parameter \tFasa R \tFasa S \tFasa T");
-  // Serial.println("------------------------------------");
-  // Serial.print("Tegangan \t");
-  // Serial.print(String(dataListrik_fasa_R.tegangan));
-  // Serial.print("\t" + String(dataListrik_fasa_S.tegangan));
-  // Serial.print("\t" + String(dataListrik_fasa_T.tegangan));
-  // Serial.println();
-  // Serial.print("Arus \t\t");
-  // Serial.print(String(dataListrik_fasa_R.arus));
-  // Serial.print("\t" + String(dataListrik_fasa_S.arus));
-  // Serial.print("\t" + String(dataListrik_fasa_T.arus));
-  // Serial.println();
-  // Serial.print("Frekuensi \t");
-  // Serial.print(String(dataListrik_fasa_R.frekuensi));
-  // Serial.print("\t" + String(dataListrik_fasa_S.frekuensi));
-  // Serial.print("\t" + String(dataListrik_fasa_T.frekuensi));
-  // Serial.println();
-  // Serial.println();
-  // Serial.println();
-  // Serial.println();
-  // Serial.println();
 }
