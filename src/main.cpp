@@ -53,7 +53,7 @@ void bacaDataListrik(PZEM004Tv30 _pzem, dataListrik *_dataListrik);
 String nungguSMS();
 void kirimSMS(String *_kontenSMS, String *_noHP);
 void clearNotif();
-void lcdDisplay(uint8_t _stateTampilan);
+void lcdDisplay();
 
 // test fungsi
 void test_bacaPZEM();
@@ -80,8 +80,7 @@ void setup()
 void loop()
 {
   test_bacaPZEM();
-  lcdDisplay(0);
-  Serial.println(stateTampilan);
+  lcdDisplay();
 }
 
 /* ************** Fungsi - Fungsi ************* */
@@ -126,7 +125,7 @@ void clearNotif()
 {
 }
 
-void lcdDisplay(uint8_t _stateTampilan)
+void lcdDisplay()
 {
   char _dataParameter[MAX_CHAR] = "";
   String _judul = "";
@@ -165,7 +164,7 @@ void lcdDisplay(uint8_t _stateTampilan)
     sprintf(_dataParameter, " %s %s %s ", str_dataFasa_R, str_dataFasa_S, str_dataFasa_T);
     lcd.print(_dataParameter);
 
-    stateTampilan += 1;
+    stateTampilan += 1; // update state display
   }
 }
 
