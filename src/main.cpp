@@ -13,7 +13,7 @@ bool statusListrikPadam = 0; // tidak padam = 0 || padam = 1
 uint8_t state = 0;
 uint8_t stateTampilan = 0;
 char fasaPadam;
-String NO_HP = "6285333389189"; // No HP ISI DI SINI ! (+62 ...)
+String NO_HP = "6285729434083"; // No HP ISI DI SINI ! (+62 ...)
 String pesanListrikMenyala = "KD 0181 Tegangan sudah kembali normal";
 String pesanListrikPadam;
 String pesanMasuk;
